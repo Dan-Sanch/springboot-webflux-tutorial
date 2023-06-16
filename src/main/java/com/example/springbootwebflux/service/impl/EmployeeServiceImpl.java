@@ -40,4 +40,24 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .switchIfEmpty(Flux.empty())
             ;
     }
+
+    @Override
+    public Mono<EmployeeDto> updateEmployee(EmployeeDto employeeDto, String employeeId) {
+        Mono<Employee> employeeMono = employeeRepository.findById(employeeId);
+        // We should check that the Employee actually exists
+
+        // NOTE: flatMap doesn't really do much, besides unpacking the Employee only within the callback Function,
+        // probably making the sequence asynchronous
+        // Functionality wise, we could just unpack the found Employee, modify it, and then save it, all of it
+        // sequentially outside the callback function
+        Mono<Employee> updatedEmployee = employeeMono.flatMap(existingEmployee -> {
+            existingEmployee.setFirstName(employeeDto.getFirstName());
+            existingEmployee.setLastName(employeeDto.getLastName());
+            existingEmployee.setEmail(employeeDto.getEmail());
+
+            return employeeRepository.save(existingEmployee);
+        });
+
+        return updatedEmployee.map(EmployeeMapper::mapToEmployeeDto);
+    }
 }
