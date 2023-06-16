@@ -36,4 +36,10 @@ public class EmployeeController {
     {
         return employeeService.updateEmployee(employeeDto, employeeId);
     }
+
+    @DeleteMapping("/{id}")
+    public Mono<Void> deleteEmployee(@PathVariable("id") String employeeId)
+    {
+        return employeeService.deleteEmployee(employeeId);
+    }
 }
