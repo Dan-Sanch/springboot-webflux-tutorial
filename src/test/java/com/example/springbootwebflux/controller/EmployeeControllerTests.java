@@ -104,4 +104,36 @@ public class EmployeeControllerTests {
                 .hasSize(2)
         ;
     }
+
+    @Test
+    @DisplayName("Update Employee test")
+    public void givenUpdatedEmployee_whenUpdateEmployee_thenReturnUpdatedEmployee() {
+        // given
+        String employeeId = "DanID";
+        EmployeeDto updatedEmployeeDto =
+                new EmployeeDto(employeeId, "Dan2", "San2", "dan2@domain.com");
+
+        BDDMockito.given(employeeService.updateEmployee(
+                ArgumentMatchers.any(EmployeeDto.class),
+                ArgumentMatchers.any(String.class)
+        )).willReturn(Mono.just(updatedEmployeeDto));
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.put()
+                        .uri("/api/employees/{id}", employeeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .body(Mono.just(updatedEmployeeDto), EmployeeDto.class)
+                        .exchange();
+
+        // then
+        response.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.firstName").isEqualTo(updatedEmployeeDto.getFirstName())
+                .jsonPath("$.lastName").isEqualTo(updatedEmployeeDto.getLastName())
+                .jsonPath("$.email").isEqualTo(updatedEmployeeDto.getEmail())
+        ;
+    }
 }
