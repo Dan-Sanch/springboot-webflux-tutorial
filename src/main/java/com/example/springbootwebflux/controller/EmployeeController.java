@@ -5,6 +5,7 @@ import com.example.springbootwebflux.service.EmployeeService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -22,5 +23,10 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public Mono<EmployeeDto> getEmployeeById(@PathVariable String id){
         return employeeService.getEmployee(id);
+    }
+
+    @GetMapping
+    public Flux<EmployeeDto> getAllEmployees(){
+        return employeeService.getAllEmployees();
     }
 }
