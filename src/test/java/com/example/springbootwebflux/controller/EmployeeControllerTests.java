@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @WebFluxTest
@@ -77,6 +78,30 @@ public class EmployeeControllerTests {
                 .jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
                 .jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
                 .jsonPath("$.email").isEqualTo(employeeDto.getEmail())
+        ;
+    }
+
+    @Test
+    @DisplayName("Get All Employees test")
+    public void givenEmployeeList_whenGetAllEmployees_thenReturnEmployeeList() {
+        // given
+        EmployeeDto employeeDto = new EmployeeDto("DanID", "Daniel", "Sanchez", "daniel@domain.com");
+        EmployeeDto employeeDto2 = new EmployeeDto("Dan2ID", "Daniel2", "Sanchez2", "daniel2@domain.com");
+        BDDMockito.given(employeeService.getAllEmployees())
+                .willReturn(Flux.just(employeeDto, employeeDto2));
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.get()
+                        .uri("/api/employees")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .exchange();
+
+        // then
+        response.expectStatus().isOk()
+                .expectBodyList(EmployeeDto.class)
+                .consumeWith(System.out::println)
+                .hasSize(2)
         ;
     }
 }
