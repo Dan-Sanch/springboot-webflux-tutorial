@@ -136,4 +136,26 @@ public class EmployeeControllerTests {
                 .jsonPath("$.email").isEqualTo(updatedEmployeeDto.getEmail())
         ;
     }
+
+    @Test
+    @DisplayName("Delete Employee test")
+    public void givenEmployeeId_whenDeleteEmployee_thenStatusIsNoContent() {
+        // given
+        BDDMockito.given(employeeService.deleteEmployee(ArgumentMatchers.any(String.class)))
+                .willReturn(Mono.empty());
+        String employeeId = "DanID";
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.delete()
+                        .uri("/api/employees/{id}", employeeId)
+                        .exchange();
+
+        // then
+        response.expectStatus().isNoContent()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .isEmpty()
+        ;
+    }
 }
