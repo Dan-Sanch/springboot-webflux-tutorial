@@ -51,4 +51,32 @@ public class EmployeeControllerTests {
                 .jsonPath("$.email").isEqualTo(employeeDto.getEmail())
         ;
     }
+
+    @Test
+    @DisplayName("Get Employee test")
+    public void givenEmployeeId_whenGetEmployee_thenReturnEmployee() {
+        // given
+        String employeeId = "DanId";
+        EmployeeDto employeeDto = new EmployeeDto(employeeId, "Daniel", "Sanchez", "daniel@domain.com");
+
+        BDDMockito.given(employeeService.getEmployee(employeeId))
+                .willReturn(Mono.just(employeeDto));
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.get()
+                        .uri("/api/employees/{id}", employeeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .exchange();
+
+        // then
+        response.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.id").isEqualTo(employeeDto.getId())
+                .jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
+                .jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
+                .jsonPath("$.email").isEqualTo(employeeDto.getEmail())
+        ;
+    }
 }
