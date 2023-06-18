@@ -2,6 +2,7 @@ package com.example.springbootwebflux.controller;
 
 import com.example.springbootwebflux.dto.EmployeeDto;
 import com.example.springbootwebflux.repository.EmployeeRepository;
+import com.example.springbootwebflux.service.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,11 +18,13 @@ public class EmployeeControllerIntegrationTests {
     @Autowired
     private WebTestClient webTestClient;
     @Autowired
-    private EmployeeRepository repository;
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeService employeeService;
 
     @BeforeEach
     public void setUp() {
-        repository.deleteAll();
+        employeeRepository.deleteAll().block();
     }
 
     @Test
@@ -43,6 +46,32 @@ public class EmployeeControllerIntegrationTests {
         response.expectStatus().isCreated()
                 .expectBody()
                 .consumeWith(System.out::println)
+                .jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
+                .jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
+                .jsonPath("$.email").isEqualTo(employeeDto.getEmail())
+        ;
+    }
+
+    @Test
+    @DisplayName("Get Employee test")
+    public void givenEmployeeId_whenGetEmployee_thenReturnEmployee() {
+        // given
+        EmployeeDto employeeDto = new EmployeeDto(null, "Daniel", "Sanchez", "daniel@domain.com");
+        EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+        String employeeId = savedEmployee.getId();
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.get()
+                        .uri("/api/employees/{id}", employeeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .exchange();
+
+        // then
+        response.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.id").isEqualTo(employeeId)
                 .jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
                 .jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
                 .jsonPath("$.email").isEqualTo(employeeDto.getEmail())
