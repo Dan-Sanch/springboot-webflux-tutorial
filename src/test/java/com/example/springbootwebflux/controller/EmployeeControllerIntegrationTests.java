@@ -131,4 +131,26 @@ public class EmployeeControllerIntegrationTests {
                 .jsonPath("$.email").isEqualTo(updatedEmployeeDto.getEmail())
         ;
     }
+
+    @Test
+    @DisplayName("Delete Employee test")
+    public void givenEmployeeId_whenDeleteEmployee_thenStatusIsNoContent() {
+        // given
+        EmployeeDto employeeDto = new EmployeeDto(null, "Daniel", "Sanchez", "daniel@domain.com");
+        EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+        String employeeId = savedEmployee.getId();
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.delete()
+                        .uri("/api/employees/{id}", employeeId)
+                        .exchange();
+
+        // then
+        response.expectStatus().isNoContent()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .isEmpty()
+        ;
+    }
 }
