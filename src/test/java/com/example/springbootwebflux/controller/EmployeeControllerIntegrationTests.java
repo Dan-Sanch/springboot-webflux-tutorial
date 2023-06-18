@@ -101,4 +101,34 @@ public class EmployeeControllerIntegrationTests {
                 .hasSize(2)
         ;
     }
+
+    @Test
+    @DisplayName("Update Employee test")
+    public void givenUpdatedEmployee_whenUpdateEmployee_thenReturnUpdatedEmployee() {
+        // given
+        EmployeeDto employeeDto = new EmployeeDto(null, "Daniel", "Sanchez", "daniel@domain.com");
+        EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+
+        String employeeId = savedEmployee.getId();
+        EmployeeDto updatedEmployeeDto =
+                new EmployeeDto(employeeId, "Dan2", "San2", "dan2@domain.com");
+
+        // when
+        WebTestClient.ResponseSpec response =
+                webTestClient.put()
+                        .uri("/api/employees/{id}", employeeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .body(Mono.just(updatedEmployeeDto), EmployeeDto.class)
+                        .exchange();
+
+        // then
+        response.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.firstName").isEqualTo(updatedEmployeeDto.getFirstName())
+                .jsonPath("$.lastName").isEqualTo(updatedEmployeeDto.getLastName())
+                .jsonPath("$.email").isEqualTo(updatedEmployeeDto.getEmail())
+        ;
+    }
 }
